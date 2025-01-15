@@ -9,17 +9,19 @@ from fake_useragent import UserAgent
 privates = utils.read_lines("privates.txt")
 proxies = utils.read_lines("proxies.txt")
 
-good_proxies = utils.check_proxies(proxies)
+if input("Check proxies? y/n: ") == "y":
+    good_proxies = utils.check_proxies(proxies)
 
-if len(good_proxies) < len(privates):
-    print(f"Not enough valid proxies. [{len(good_proxies)} / {len(privates)}]")
-    sys.exit()
+    if len(good_proxies) < len(privates):
+        print(f"Not enough valid proxies. [{len(good_proxies)} / {len(privates)}]")
+        sys.exit()
+    proxies = good_proxies
 
 message_to_sign = "By signing this message, I confirm that I have read and agreed to Plume's Airdrop Terms of Service. This does not cost any gas to sign."
 
 sleep_time = int(input("Sleep time between requests in seconds: "))
 
-for private, proxy in zip(privates, good_proxies):
+for private, proxy in zip(privates, proxies):
     account = Account.from_key(private)
 
     headers = {
