@@ -29,24 +29,25 @@ def read_lines(path):
 def my_ip():
     return requests.get("https://api.myip.com").json().get("ip", "????")
 
-proxies_semaphore = Semaphore(200)
+proxies_semaphore = Semaphore(100)
 proxy_lock = Lock()
 def check_proxy(original_ip, proxy, good_proxies_list):
-    proxies = {
-        "http": proxy,
-        "https": proxy
-    }
-    try:
-        response = requests.get("https://api.myip.com", proxies=proxies, timeout=5)
-        if response.status_code == 200:
-            result = response.json()
-            if result.get("ip") != original_ip:
-                with proxy_lock:
-                    good_proxies_list.append(proxy)
-            else:
-                return False
-    except Exception as e:
-        return False
+    with proxies_semaphore:
+        proxies = {
+            "http": proxy,
+            "https": proxy
+        }
+        try:
+            response = requests.get("https://api.myip.com", proxies=proxies, timeout=5)
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("ip") != original_ip:
+                    with proxy_lock:
+                        good_proxies_list.append(proxy)
+                else:
+                    return False
+        except Exception as e:
+            return False
 
 def check_proxies(proxies):
     original_ip = my_ip()
