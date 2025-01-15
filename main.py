@@ -20,9 +20,17 @@ if input("Check proxies? y/n: ") == "y":
 message_to_sign = "By signing this message, I confirm that I have read and agreed to Plume's Airdrop Terms of Service. This does not cost any gas to sign."
 
 sleep_time = int(input("Sleep time between requests in seconds: "))
+start_from_address = input("Address to start from (enter if start from beginning): ").lower()
 
+start = False
 for private, proxy in zip(privates, proxies):
     account = Account.from_key(private)
+    if start_from_address and start_from_address in account.address.lower():
+        start = True
+    elif start_from_address and not start:
+        continue
+    elif start_from_address and start:
+        pass
 
     headers = {
         'accept': '*/*',
@@ -57,5 +65,5 @@ for private, proxy in zip(privates, proxies):
             "https": proxy
         }
     )
-    print(account.address, response.json())
+    print(account.address, response.status_code, response.text)
     time.sleep(sleep_time)
